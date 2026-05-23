@@ -1,3 +1,117 @@
+import { useState, useEffect, useCallback } from 'react';
+import { VERSION } from './version.js';
+
+// Sudoku Generator Functions
+function generateSudoku(difficulty) {
+  const board = Array.from({ length: 9 }, () => Array(9).fill(0));
+  
+  // Fill diagonal 3x3 boxes first (independent)
+  for (let i = 0; i < 9; i += 3) {
+    fillBox(board, i, i);
+  }
+  
+  // Solve the rest
+  solveSudoku(board);
+  
+  const solution = board.map(row => [...row]);
+  
+  // Remove digits based on difficulty
+  let cellsToRemove;
+  switch (difficulty) {
+    case 'easy': cellsToRemove = 30; break;
+    case 'medium': cellsToRemove = 45; break;
+    case 'hard': cellsToRemove = 58; break;
+    default: cellsToRemove = 30;
+  }
+  
+  const puzzle = board.map(row => [...row]);
+  let removed = 0;
+  while (removed < cellsToRemove) {
+    const row = Math.floor(Math.random() * 9);
+    const col = Math.floor(Math.random() * 9);
+    if (puzzle[row][col] !== 0) {
+      puzzle[row][col] = 0;
+      removed++;
+    }
+  }
+  
+  return { initial: puzzle, solution, puzzle };
+}
+
+function fillBox(board, rowStart, colStart) {
+  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  // Shuffle numbers
+  for (let i = nums.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [nums[i], nums[j]] = [nums[j], nums[i]];
+  }
+  
+  let idx = 0;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      board[rowStart + i][colStart + j] = nums[idx++];
+    }
+  }
+}
+
+function solveSudoku(board) {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (board[row][col] === 0) {
+        for (let num = 1; num <= 9; num++) {
+          if (isValid(board, row, col, num)) {
+            board[row][col] = num;
+            if (solveSudoku(board)) {
+              return true;
+            }
+            board[row][col] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isValid(board, row, col, num) {
+  // Check row
+  for (let i = 0; i < 9; i++) {
+    if (board[row][i] === num) return false;
+  }
+  
+  // Check column
+  for (let i = 0; i < 9; i++) {
+    if (board[i][col] === num) return false;
+  }
+  
+  // Check 3x3 box
+  const boxRow = Math.floor(row / 3) * 3;
+  const boxCol = Math.floor(col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[boxRow + i][boxCol + j] === num) return false;
+    }
+  }
+  
+  return true;
+}
+
+function isBoardFull(board) {
+  return board.every(row => row.every(cell => cell !== 0));
+}
+
+function checkBoard(currentBoard, solution) {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (currentBoard[row][col] !== solution[row][col]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // Main App Component
 export default function App() {
   const [gameState, setGameState] = useState({
@@ -48,10 +162,10 @@ export default function App() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
   
-  const startGame = (difficulty) => {
+  const startGame = useCallback((difficulty) => {
     const { initial, solution, puzzle } = generateSudoku(difficulty)
     
-    setGameState({
+    setGameState(prev => ({
       initialBoard: initial,
       currentBoard: puzzle,
       solution: solution,
@@ -61,11 +175,11 @@ export default function App() {
       startTime: Date.now(),
       elapsedTime: 0,
       gameStatus: 'playing',
-      highscores: gameState.highscores
-    })
+      highscores: prev.highscores
+    }))
     
     setShowWinAnimation(false)
-  }
+  }, [])
   
   const handleCellClick = (row, col) => {
     if (gameState.gameStatus !== 'playing') return
@@ -75,7 +189,13 @@ export default function App() {
     }))
   }
   
-  const handleNumberInput = (num) => {
+  const handleNumberInput = useCallback((num) => {
+    // Validate number input (1-9 only)
+    if (typeof num !== 'number' || num < 1 || num > 9) {
+      console.warn('Invalid number input:', num)
+      return
+    }
+    
     if (gameState.gameStatus !== 'playing' || !gameState.selectedCell) return
     
     const { row, col } = gameState.selectedCell
@@ -84,17 +204,19 @@ export default function App() {
     // Can't modify pre-filled cells
     if (initialBoard[row][col] !== 0) return
     
-    const newBoard = [...currentBoard]
-    newBoard[row] = [...currentBoard[row]]
+    const newBoard = currentBoard.map(r => [...r])
     newBoard[row][col] = num
     
     setGameState(prev => ({
       ...prev,
       currentBoard: newBoard
     }))
-  }
+    
+    // Check win only after valid input
+    checkWin()
+  }, [gameState.gameStatus, gameState.selectedCell, gameState.initialBoard, checkWin])
   
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (gameState.gameStatus !== 'playing' || !gameState.selectedCell) return
     
     const { row, col } = gameState.selectedCell
@@ -102,36 +224,38 @@ export default function App() {
     
     if (initialBoard[row][col] !== 0) return
     
-    const newBoard = [...currentBoard]
-    newBoard[row] = [...currentBoard[row]]
+    const newBoard = currentBoard.map(r => [...r])
     newBoard[row][col] = 0
     
     setGameState(prev => ({
       ...prev,
       currentBoard: newBoard
     }))
-  }
+    
+    // Check win after delete
+    checkWin()
+  }, [gameState.gameStatus, gameState.selectedCell, gameState.initialBoard, checkWin])
   
   const checkWin = useCallback(() => {
     if (gameState.gameStatus !== 'playing') return
     
-    const { currentBoard, solution, difficulty, elapsedTime, highscores } = gameState
+    const { currentBoard, solution } = gameState
     
     if (isBoardFull(currentBoard) && checkBoard(currentBoard, solution)) {
       // Win!
       const newHighscore = {
-        difficulty,
-        time: elapsedTime,
+        difficulty: gameState.difficulty,
+        time: gameState.elapsedTime,
         date: new Date().toISOString()
       }
       
-      const scores = [...(highscores[difficulty] || []), newHighscore]
+      const scores = [...(gameState.highscores[gameState.difficulty] || []), newHighscore]
         .sort((a, b) => a.time - b.time)
         .slice(0, 5)
       
       const updatedHighscores = {
-        ...highscores,
-        [difficulty]: scores
+        ...gameState.highscores,
+        [gameState.difficulty]: scores
       }
       
       localStorage.setItem('sudokuHighscores', JSON.stringify(updatedHighscores))
@@ -144,14 +268,15 @@ export default function App() {
       
       setShowWinAnimation(true)
     }
-  }, [gameState])
+  }, [gameState.difficulty, gameState.elapsedTime, gameState.gameStatus, gameState.highscores])
   
-  // Check win periodically
+  // Check win after moves (not in a loop)
   useEffect(() => {
-    if (gameState.gameStatus === 'playing') {
+    // Only check win when board changes during playing game
+    if (gameState.gameStatus === 'playing' && gameState.currentBoard) {
       checkWin()
     }
-  }, [gameState.currentBoard, checkWin])
+  }, [gameState.currentBoard])
   
   const getCellClass = (row, col) => {
     const { initialBoard, currentBoard, selectedCell } = gameState
@@ -186,14 +311,25 @@ export default function App() {
     return className
   }
   
-  const getRank = (difficulty, time) => {
+  const getRank = useCallback((difficulty, time) => {
     const scores = gameState.highscores[difficulty] || []
     if (scores.length === 0) return '-'
     
+    // Sort by time ascending (lower is better)
     const sorted = [...scores].sort((a, b) => a.time - b.time)
-    const rank = sorted.findIndex(s => s.time >= time) + 1
-    return rank <= scores.length ? `${rank}/${scores.length}` : '-'
-  }
+    
+    // Find rank: how many scores are strictly better than current time
+    const betterCount = sorted.filter(s => s.time < time).length
+    
+    // Rank is 1-based: if 2 scores are better, you're rank 3
+    const rank = betterCount + 1
+    
+    // Only show rank if you're in top scores
+    if (rank <= sorted.length) {
+      return `${rank}/${sorted.length}`
+    }
+    return '-'
+  }, [gameState.highscores])
   
   const getDifficultyColor = (diff) => {
     switch (diff) {
