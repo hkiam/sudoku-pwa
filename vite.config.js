@@ -5,7 +5,6 @@ const VERSION = '1.1.0'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/sudoku-pwa/',
   server: {
     port: 3000,
     open: true

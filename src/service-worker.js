@@ -4,8 +4,7 @@ const ASSETS_TO_CACHE = [
   '/index.html',
   '/manifest.json',
   '/apple-icon.png',
-  '/assets/index-Bvpp72Ob.js',
-  '/assets/index-DB8c4edF.css'
+  '/vite.svg'
 ];
 
 self.addEventListener('install', (event) => {
