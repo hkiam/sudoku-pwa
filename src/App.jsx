@@ -1,129 +1,3 @@
-import React, { useState, useEffect, useCallback } from 'react'
-
-import './styles.css'
-import { VERSION } from './version'
-
-// Sudoku Generator and Solver Logic
-const generateSudoku = (difficulty) => {
-  const board = Array(9).fill().map(() => Array(9).fill(0))
-  
-  // Fill diagonal boxes first (independent)
-  for (let i = 0; i < 9; i += 3) {
-    fillBox(board, i, i)
-  }
-  
-  // Solve the rest
-  solveSudoku(board)
-  
-  // Remove digits based on difficulty
-  const attempts = {
-    easy: 30,
-    medium: 45,
-    hard: 55
-  }
-  
-  const puzzle = board.map(row => [...row])
-  let cellsToRemove = attempts[difficulty]
-  
-  while (cellsToRemove > 0) {
-    const row = Math.floor(Math.random() * 9)
-    const col = Math.floor(Math.random() * 9)
-    
-    if (puzzle[row][col] !== 0) {
-      puzzle[row][col] = 0
-      cellsToRemove--
-    }
-  }
-  
-  return {
-    initial: puzzle.map(row => [...row]),
-    solution: board,
-    puzzle: puzzle
-  }
-}
-
-const fillBox = (board, row, col) => {
-  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-  shuffleArray(nums)
-  
-  let idx = 0
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      board[row + i][col + j] = nums[idx++]
-    }
-  }
-}
-
-const shuffleArray = (arr) => {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    [arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-}
-
-const solveSudoku = (board) => {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col] === 0) {
-        for (let num = 1; num <= 9; num++) {
-          if (isValidMove(board, row, col, num)) {
-            board[row][col] = num
-            if (solveSudoku(board)) {
-              return true
-            }
-            board[row][col] = 0
-          }
-        }
-        return false
-      }
-    }
-  }
-  return true
-}
-
-const isValidMove = (board, row, col, num) => {
-  // Check row
-  for (let i = 0; i < 9; i++) {
-    if (board[row][i] === num) return false
-  }
-  
-  // Check column
-  for (let i = 0; i < 9; i++) {
-    if (board[i][col] === num) return false
-  }
-  
-  // Check 3x3 box
-  const startRow = Math.floor(row / 3) * 3
-  const startCol = Math.floor(col / 3) * 3
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      if (board[startRow + i][startCol + j] === num) return false
-    }
-  }
-  
-  return true
-}
-
-const isBoardFull = (board) => {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col] === 0) return false
-    }
-  }
-  return true
-}
-
-const checkBoard = (board, solution) => {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col] !== 0 && board[row][col] !== solution[row][col]) {
-        return false
-      }
-    }
-  }
-  return true
-}
-
 // Main App Component
 export default function App() {
   const [gameState, setGameState] = useState({
@@ -136,7 +10,7 @@ export default function App() {
     startTime: null,
     elapsedTime: 0,
     gameStatus: 'menu', // menu, playing, won
-    highscores: []
+    highscores: { easy: [], medium: [], hard: [] }
   })
   
   const [showWinAnimation, setShowWinAnimation] = useState(false)
@@ -145,7 +19,12 @@ export default function App() {
   useEffect(() => {
     const saved = localStorage.getItem('sudokuHighscores')
     if (saved) {
-      setGameState(prev => ({ ...prev, highscores: JSON.parse(saved) }))
+      try {
+        const parsed = JSON.parse(saved)
+        setGameState(prev => ({ ...prev, highscores: parsed }))
+      } catch (e) {
+        console.error('Failed to parse highscores:', e)
+      }
     }
   }, [])
   
@@ -246,7 +125,7 @@ export default function App() {
         date: new Date().toISOString()
       }
       
-      const scores = [...highscores[difficulty] || [], newHighscore]
+      const scores = [...(highscores[difficulty] || []), newHighscore]
         .sort((a, b) => a.time - b.time)
         .slice(0, 5)
       
@@ -357,7 +236,7 @@ export default function App() {
             </button>
           </div>
 
-          {Object.keys(gameState.highscores).length > 0 && (
+          {(gameState.highscores.easy.length > 0 || gameState.highscores.medium.length > 0 || gameState.highscores.hard.length > 0) && (
             <div className="highscores-section">
               <h3>Top Scores</h3>
               {['easy', 'medium', 'hard'].map(diff => {
