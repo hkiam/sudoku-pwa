@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Sudoku PWA', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/sudoku-pwa/');
+    await page.goto('http://localhost:3000/');
   });
 
   test('shows menu screen with difficulty buttons', async ({ page }) => {
