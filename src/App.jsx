@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+
 import './styles.css'
 
 // Sudoku Generator and Solver Logic
@@ -353,7 +354,11 @@ export default function App() {
             >
               Hard
             </button>
-          </div>
+          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
           
           {Object.keys(gameState.highscores).length > 0 && (
             <div className="highscores-section">
@@ -373,16 +378,36 @@ export default function App() {
                           <div key={idx} className="highscore-item">
                             <span>{idx + 1}.</span>
                             <span>{formatTime(score.time)}</span>
-                          </div>
+                          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
                         ))
                       )}
-                    </div>
-                  </div>
+                    
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
+                  
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
                 )
               })}
-            </div>
+            
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
           )}
-        </div>
+        
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
       )}
       
       {gameState.gameStatus === 'playing' && (
@@ -399,7 +424,11 @@ export default function App() {
             >
               ← Menu
             </button>
-          </div>
+          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
           
           <div className="game-info">
             <div className="info-item">
@@ -407,12 +436,24 @@ export default function App() {
               <span style={{ color: getDifficultyColor(gameState.difficulty) }}>
                 {gameState.difficulty.charAt(0).toUpperCase() + gameState.difficulty.slice(1)}
               </span>
-            </div>
+            
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
             <div className="info-item">
               <span>Time:</span>
               <span>{formatTime(gameState.elapsedTime)}</span>
-            </div>
-          </div>
+            
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
+          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
           
           <div className="sudoku-grid">
             {gameState.currentBoard?.map((row, rowIndex) => (
@@ -424,11 +465,23 @@ export default function App() {
                     onClick={() => handleCellClick(rowIndex, colIndex)}
                   >
                     {cell !== 0 ? cell : ''}
-                  </div>
+                  
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
                 ))}
-              </div>
+              
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
             ))}
-          </div>
+          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
           
           <div className="numpad">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
@@ -446,8 +499,16 @@ export default function App() {
             >
               Delete
             </button>
-          </div>
-        </div>
+          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
+        
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
       )}
       
       {gameState.gameStatus === 'won' && (
@@ -462,18 +523,34 @@ export default function App() {
                 <span style={{ color: getDifficultyColor(gameState.difficulty) }}>
                   {gameState.difficulty.charAt(0).toUpperCase() + gameState.difficulty.slice(1)}
                 </span>
-              </div>
+              
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
               <div className="stat-item">
                 <span>Time:</span>
                 <span>{formatTime(gameState.elapsedTime)}</span>
-              </div>
+              
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
               {gameState.highscores[gameState.difficulty] && (
                 <div className="stat-item">
                   <span>Your Rank:</span>
                   <span>{getRank(gameState.difficulty, gameState.elapsedTime)}</span>
-                </div>
+                
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
               )}
-            </div>
+            
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
             
             <div className="win-buttons">
               <button 
@@ -492,10 +569,26 @@ export default function App() {
               >
                 Main Menu
               </button>
-            </div>
-          </div>
-        </div>
+            
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
+          
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
+        
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
       )}
-    </div>
+    
+      <footer className="app-footer">
+        <span>Sudoku PWA v{import.meta.env.VERSION}</span>
+      </footer>
+</div>
   )
 }

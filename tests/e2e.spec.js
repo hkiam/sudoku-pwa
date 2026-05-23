@@ -46,4 +46,17 @@ test.describe('Sudoku PWA', () => {
     // Should be back at menu
     await expect(page.getByRole('button', { name: 'Easy' })).toBeVisible();
   });
+
+  test('displays correct version number', async ({ page }) => {
+    // Check version in footer
+    await expect(page.getByText('Sudoku PWA v1.1.0')).toBeVisible();
+    
+    // Check version in manifest
+    const manifestResponse = await page.goto('/sudoku-pwa/manifest.json');
+    if (manifestResponse) {
+      const manifest = await manifestResponse.json();
+      expect(manifest.version).toBe('1.1.0');
+    }
+  });
+
 });
