@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const GITHUB_PAGES = process.env.GITHUB_PAGES || false;
+// GitHub Pages base path
+const GITHUB_PAGES = process.env.GITHUB_PAGES || false
 
 export default defineConfig({
   plugins: [react()],
@@ -11,7 +12,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false
+    sourcemap: false,
+    assetsDir: 'assets',
+    emptyOutDir: true
   },
-  base: GITHUB_PAGES ? '/sudoku-pwa/' : '/'
+  base: GITHUB_PAGES ? '/sudoku-pwa/' : './'
 })
