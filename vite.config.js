@@ -15,6 +15,7 @@ export default defineConfig({
     assetsDir: 'assets',
     emptyOutDir: true,
     rollupOptions: {
+      input: 'src/main.jsx',
       output: {
         entryFileNames: `assets/index-[hash].js`,
         chunkFileNames: `assets/chunk-[hash].js`,
