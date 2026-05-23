@@ -12,6 +12,5 @@ export default defineConfig({
     sourcemap: false,
     assetsDir: 'assets',
     emptyOutDir: true
-  },
-  base: '/sudoku-pwa/'
+  }
 })
