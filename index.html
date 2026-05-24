@@ -2,16 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sudoku PWA</title>
     <meta name="description" content="Classic Sudoku with Highscore - A Progressive Web App" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#7A4A24" />
-    <link rel="apple-touch-icon" href="/apple-icon.png" />
-    <script type="module" crossorigin src="/src/main.jsx"></script>
+    <link rel="apple-touch-icon" href="./apple-icon.png" />
   </head>
   <body>
     <div id="root"></div>
+    <script type="module">
+      const isLocalDev = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+
+      const loadStylesheet = (href) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+      };
+
+      const loadModule = (src) => {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.crossOrigin = 'anonymous';
+        script.src = src;
+        document.body.appendChild(script);
+      };
+
+      if (isLocalDev) {
+        loadModule('/src/main.jsx');
+      } else {
+        loadStylesheet('./dist/assets/index.css');
+        loadModule('./dist/assets/index.js');
+      }
+    </script>
   </body>
 </html>
