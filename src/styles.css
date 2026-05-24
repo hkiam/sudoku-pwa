@@ -224,6 +224,11 @@ body {
   box-shadow: inset 0 0 0 2px var(--accent-color);
 }
 
+.cell.highlighted {
+  background: rgba(78, 204, 163, 0.25);
+  border: 1px solid var(--accent-color);
+}
+
 .cell.pre-filled {
   color: var(--pre-filled-color);
 }
@@ -252,6 +257,45 @@ body {
 
 .cell.border-right {
   border-right: 3px solid var(--grid-border);
+}
+
+/* Pencil mode notes */
+.cell.has-notes {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.cell.selected.has-notes {
+  background: rgba(255, 215, 0, 0.2);
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+.note-num {
+  font-size: 0.7rem;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pencil-btn {
+  grid-column: span 1;
+  background: var(--accent-color);
+}
+
+.pencil-btn.active {
+  background: #3db08c;
+  box-shadow: inset 0 0 0 2px white;
+}
+
+.pencil-btn:hover {
+  background: #3db08c;
 }
 
 /* Numpad */

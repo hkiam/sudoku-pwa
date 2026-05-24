@@ -11,7 +11,7 @@
   },
   "name": "sudoku-pwa",
   "scripts": {
-    "build": "vite build && cp dist/index.html . && cp -r dist/assets .",
+    "build": "vite build",
     "dev": "vite",
     "preview": "vite preview"
   },

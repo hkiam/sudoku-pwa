@@ -6,7 +6,7 @@ test.describe('Sudoku PWA', () => {
   });
 
   test('shows menu screen with difficulty buttons', async ({ page }) => {
-    await expect(page.getByText('Sudoku')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sudoku' })).toBeVisible();
     await expect(page.getByText('Classic Number Puzzle')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Easy' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Medium' })).toBeVisible();
@@ -17,7 +17,7 @@ test.describe('Sudoku PWA', () => {
     await page.getByRole('button', { name: 'Easy' }).click();
     
     // Should show game screen
-    await expect(page.getByText('Sudoku')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sudoku' })).toBeVisible();
     await expect(page.getByRole('button', { name: '← Menu' })).toBeVisible();
     
     // Should show game info
@@ -52,7 +52,7 @@ test.describe('Sudoku PWA', () => {
     await expect(page.getByText('Sudoku PWA v1.1.0')).toBeVisible();
     
     // Check version in manifest
-    const manifestResponse = await page.goto('/sudoku-pwa/manifest.json');
+    const manifestResponse = await page.goto('http://localhost:3000/manifest.json');
     if (manifestResponse) {
       const manifest = await manifestResponse.json();
       expect(manifest.version).toBe('1.1.0');
