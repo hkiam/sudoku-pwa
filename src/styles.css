@@ -428,6 +428,19 @@ body {
   background: var(--bg-secondary);
 }
 
+/* Score display */
+.score-display {
+  font-size: 2rem;
+  color: var(--accent-color);
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+.score-value {
+  color: var(--highlight-color);
+  font-weight: bold;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .app {

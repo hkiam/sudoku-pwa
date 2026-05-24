@@ -165,26 +165,117 @@ export default function App() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
   
+  // Calculate time-based decay factor (0-1 range)
+  const getTimeFactor = useCallback((elapsedTime, difficulty) => {
+    // Base time limits per difficulty (in seconds)
+    const timeLimits = { easy: 300, medium: 600, hard: 900 }
+    const limit = timeLimits[difficulty] || 300
+    
+    // Linear decay: 1.0 at start, 0.5 at limit
+    const factor = 1 - (elapsedTime / limit) * 0.5
+    return Math.max(0.5, Math.min(1.0, factor))
+  }, [])
+  
+  // Calculate score for a single cell based on number and time
+  const getCellScore = useCallback((number, elapsedTime, difficulty) => {
+    // Number value: 1-9
+    const numberValue = number
+    
+    // Time decay factor
+    const timeFactor = getTimeFactor(elapsedTime, difficulty)
+    
+    return Math.round(numberValue * 10 * timeFactor)
+  }, [getTimeFactor])
+  
+  // Calculate block score (3x3 grid)
+  const getBlockScore = useCallback((blockIndex, elapsedTime, difficulty, currentBoard) => {
+    // blockIndex 0-8: top-left to bottom-right
+    const startRow = Math.floor(blockIndex / 3) * 3
+    const startCol = (blockIndex % 3) * 3
+    
+    let sum = 0
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        sum += currentBoard[startRow + r][startCol + c]
+      }
+    }
+    
+    // Block is worth sum * 5 * timeFactor
+    const timeFactor = getTimeFactor(elapsedTime, difficulty)
+    return Math.round(sum * 5 * timeFactor)
+  }, [getTimeFactor])
+  
+  // Calculate row score
+  const getRowScore = useCallback((rowIndex, elapsedTime, difficulty, currentBoard) => {
+    const sum = currentBoard[rowIndex].reduce((a, b) => a + b, 0)
+    const timeFactor = getTimeFactor(elapsedTime, difficulty)
+    return Math.round(sum * 5 * timeFactor)
+  }, [getTimeFactor])
+  
+  // Calculate column score
+  const getColScore = useCallback((colIndex, elapsedTime, difficulty, currentBoard) => {
+    let sum = 0
+    for (let r = 0; r < 9; r++) {
+      sum += currentBoard[r][colIndex]
+    }
+    const timeFactor = getTimeFactor(elapsedTime, difficulty)
+    return Math.round(sum * 5 * timeFactor)
+  }, [getTimeFactor])
+  
   const checkWin = useCallback(() => {
     if (gameState.gameStatus !== 'playing') return
     
     const { currentBoard, solution } = gameState
     
     if (isBoardFull(currentBoard) && checkBoard(currentBoard, solution)) {
+      // Calculate total score
+      const elapsedTime = gameState.elapsedTime
+      const difficulty = gameState.difficulty
+      
+      // Score 1: Sum of all cell values * time factor
+      let totalCellScore = 0
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          totalCellScore += getCellScore(currentBoard[r][c], elapsedTime, difficulty)
+        }
+      }
+      
+      // Score 2: Block scores (3x3 grids)
+      let totalBlockScore = 0
+      for (let b = 0; b < 9; b++) {
+        totalBlockScore += getBlockScore(b, elapsedTime, difficulty, currentBoard)
+      }
+      
+      // Score 3: Row scores
+      let totalRowScore = 0
+      for (let r = 0; r < 9; r++) {
+        totalRowScore += getRowScore(r, elapsedTime, difficulty, currentBoard)
+      }
+      
+      // Score 4: Column scores
+      let totalColScore = 0
+      for (let c = 0; c < 9; c++) {
+        totalColScore += getColScore(c, elapsedTime, difficulty, currentBoard)
+      }
+      
+      // Total score = cell score + block scores + row scores + column scores
+      const totalScore = totalCellScore + totalBlockScore + totalRowScore + totalColScore
+      
       // Win!
       const newHighscore = {
-        difficulty: gameState.difficulty,
-        time: gameState.elapsedTime,
+        difficulty: difficulty,
+        time: elapsedTime,
+        score: totalScore,
         date: new Date().toISOString()
       }
       
-      const scores = [...(gameState.highscores[gameState.difficulty] || []), newHighscore]
-        .sort((a, b) => a.time - b.time)
+      const scores = [...(gameState.highscores[difficulty] || []), newHighscore]
+        .sort((a, b) => b.score - a.score) // Sort by score descending
         .slice(0, 5)
       
       const updatedHighscores = {
         ...gameState.highscores,
-        [gameState.difficulty]: scores
+        [difficulty]: scores
       }
       
       localStorage.setItem('sudokuHighscores', JSON.stringify(updatedHighscores))
@@ -192,12 +283,13 @@ export default function App() {
       setGameState(prev => ({
         ...prev,
         highscores: updatedHighscores,
-        gameStatus: 'won'
+        gameStatus: 'won',
+        score: totalScore
       }))
       
       setShowWinAnimation(true)
     }
-  }, [gameState.difficulty, gameState.elapsedTime, gameState.gameStatus, gameState.highscores])
+  }, [gameState.difficulty, gameState.elapsedTime, gameState.gameStatus, gameState.highscores, getCellScore, getBlockScore, getRowScore, getColScore])
   
   const startGame = useCallback((difficulty) => {
     const { initial, solution, puzzle } = generateSudoku(difficulty)
@@ -423,6 +515,7 @@ export default function App() {
                           <div key={idx} className="highscore-item">
                             <span>{idx + 1}.</span>
                             <span>{formatTime(score.time)}</span>
+                            <span className="score-value">{score.score}</span>
                           </div>
                         ))
                       )}
@@ -531,6 +624,7 @@ export default function App() {
         <div className="win-screen">
           <h2>🎉 You Won!</h2>
           <p>Time: {formatTime(gameState.elapsedTime)}</p>
+          <p className="score-display">Score: {gameState.score}</p>
           <button 
             className="btn"
             onClick={() => setGameState(prev => ({
