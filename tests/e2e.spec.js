@@ -18,7 +18,7 @@ test.describe('Sudoku PWA', () => {
     
     // Should show game screen
     await expect(page.getByRole('heading', { name: 'Sudoku' })).toBeVisible();
-    await expect(page.getByRole('button', { name: '← Menu' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Spiel abbrechen und zum Menü zurückkehren' })).toBeVisible();
     
     // Should show game info
     await expect(page.getByText('Difficulty:')).toBeVisible();
@@ -41,7 +41,11 @@ test.describe('Sudoku PWA', () => {
 
   test('can return to menu from game', async ({ page }) => {
     await page.getByRole('button', { name: 'Easy' }).click();
-    await page.getByRole('button', { name: '← Menu' }).click();
+    page.once('dialog', async dialog => {
+      expect(dialog.message()).toContain('Spiel abbrechen');
+      await dialog.accept();
+    });
+    await page.getByRole('button', { name: 'Spiel abbrechen und zum Menü zurückkehren' }).click();
     
     // Should be back at menu
     await expect(page.getByRole('button', { name: 'Easy' })).toBeVisible();

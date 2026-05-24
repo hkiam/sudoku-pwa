@@ -410,6 +410,16 @@ export default function App() {
     // Check win after delete
     checkWin()
   }, [gameState.gameStatus, gameState.selectedCell, gameState.initialBoard, checkWin, gameState.notes])
+
+  const handleBackToMenu = useCallback(() => {
+    if (!window.confirm('Spiel abbrechen und zum Menü zurückkehren?')) return
+
+    setGameState(prev => ({
+      ...prev,
+      gameStatus: 'menu',
+      selectedCell: null
+    }))
+  }, [])
   
   const handleNumberSelect = useCallback((num) => {
     // Select a number for input - toggles if already selected
@@ -485,10 +495,10 @@ export default function App() {
   
   const getDifficultyColor = (diff) => {
     switch (diff) {
-      case 'easy': return '#4ecca3'
-      case 'medium': return '#ffd700'
-      case 'hard': return '#e94560'
-      default: return '#fff'
+      case 'easy': return '#8A6E2F'
+      case 'medium': return '#B86F2F'
+      case 'hard': return '#8F3A2C'
+      default: return '#3F2414'
     }
   }
 
@@ -503,23 +513,26 @@ export default function App() {
             <h3>Select Difficulty</h3>
             <button 
               className="btn difficulty-btn"
-              style={{ borderLeft: `4px solid #4ecca3` }}
+              style={{ borderLeft: `5px solid ${getDifficultyColor('easy')}` }}
               onClick={() => startGame('easy')}
             >
+              <span className="difficulty-icon">☕</span>
               Easy
             </button>
             <button 
               className="btn difficulty-btn"
-              style={{ borderLeft: `4px solid #ffd700` }}
+              style={{ borderLeft: `5px solid ${getDifficultyColor('medium')}` }}
               onClick={() => startGame('medium')}
             >
+              <span className="difficulty-icon">🪵</span>
               Medium
             </button>
             <button 
               className="btn difficulty-btn"
-              style={{ borderLeft: `4px solid #e94560` }}
+              style={{ borderLeft: `5px solid ${getDifficultyColor('hard')}` }}
               onClick={() => startGame('hard')}
             >
+              <span className="difficulty-icon">🔥</span>
               Hard
             </button>
           </div>
@@ -562,19 +575,21 @@ export default function App() {
       {gameState.gameStatus === 'playing' && (
         <div className="game-screen">
           <div className="game-header">
-            <h2>Sudoku</h2>
             <button 
               className="btn back-btn"
-              onClick={() => setGameState(prev => ({
-                ...prev,
-                gameStatus: 'menu',
-                selectedCell: null
-              }))}
+              aria-label="Spiel abbrechen und zum Menü zurückkehren"
+              onClick={handleBackToMenu}
             >
-              ← Menu
+              ←
             </button>
+            <h2>Sudoku</h2>
+            <div className="topbar-stats" aria-label="Game status">
+              <span className="topbar-chip" title="Coins">🪙 {gameState.score || 0}</span>
+              <span className="topbar-chip" title="Lives">♥ 3</span>
+              <span className="topbar-chip" title="Timer">⏳ {formatTime(gameState.elapsedTime)}</span>
+            </div>
           </div>
-          
+
           <div className="game-info">
             <div className="info-item">
               <span>Difficulty:</span>
@@ -624,9 +639,15 @@ export default function App() {
           <div className="numpad">
             <button
               className={`btn pencil-btn ${pencilMode ? 'active' : ''}`}
+              aria-label="Notizmodus"
               onClick={() => setPencilMode(!pencilMode)}
             >
-              Pencil
+              <img
+                className="pencil-icon"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23f4cf71' d='M9 48.5 40.7 16.8l6.5 6.5L15.5 55H7z'/%3E%3Cpath fill='%235a2418' d='m43.5 14 4.9-4.9a5.6 5.6 0 0 1 7.9 7.9l-4.9 4.9zM7 48.5 15.5 55 7 57z'/%3E%3Cpath fill='%238b5a2b' d='m38.1 19.4 6.5-6.5 6.5 6.5-6.5 6.5z'/%3E%3Cpath fill='none' stroke='%233f2414' stroke-linecap='round' stroke-linejoin='round' stroke-width='4' d='M9 48.5 40.7 16.8l10.7 10.7L19.7 59.2 7 57zM43.5 14l4.9-4.9a5.6 5.6 0 0 1 7.9 7.9l-4.9 4.9'/%3E%3C/svg%3E"
+                alt=""
+                aria-hidden="true"
+              />
             </button>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
               <button
