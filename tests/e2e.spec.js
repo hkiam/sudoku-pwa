@@ -6,7 +6,7 @@ test.describe('Sudoku PWA', () => {
   });
 
   test('shows menu screen with difficulty buttons', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Sudoku' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sudoku v1.1.0' })).toBeVisible();
     await expect(page.getByText('Classic Number Puzzle')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Easy' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Medium' })).toBeVisible();
@@ -17,7 +17,7 @@ test.describe('Sudoku PWA', () => {
     await page.getByRole('button', { name: 'Easy' }).click();
     
     // Should show game screen
-    await expect(page.getByRole('heading', { name: 'Sudoku' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sudoku v1.1.0' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Spiel abbrechen und zum Menü zurückkehren' })).toBeVisible();
     
     // Should show game info
@@ -52,8 +52,8 @@ test.describe('Sudoku PWA', () => {
   });
 
   test('displays correct version number', async ({ page }) => {
-    // Check version in footer
-    await expect(page.getByText('Sudoku PWA v1.1.0')).toBeVisible();
+    // Check version in heading
+    await expect(page.getByRole('heading', { name: 'Sudoku v1.1.0' })).toBeVisible();
     
     // Check version in manifest
     const manifestResponse = await page.goto('http://localhost:3000/manifest.json');
@@ -61,6 +61,21 @@ test.describe('Sudoku PWA', () => {
       const manifest = await manifestResponse.json();
       expect(manifest.version).toBe('1.1.0');
     }
+  });
+
+  test('counts down lives on wrong attempts', async ({ page }) => {
+    await page.getByRole('button', { name: 'Easy' }).click();
+
+    const emptyCell = page.locator('.cell:not(.pre-filled)').first();
+    await page.getByRole('button', { name: '1' }).click();
+    await emptyCell.click();
+
+    if (!(await page.getByText('♥ 2').isVisible())) {
+      await page.getByRole('button', { name: '2' }).click();
+      await emptyCell.click();
+    }
+
+    await expect(page.getByText('♥ 2')).toBeVisible();
   });
 
 });

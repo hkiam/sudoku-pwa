@@ -123,6 +123,7 @@ export default function App() {
     difficulty: 'easy',
     startTime: null,
     elapsedTime: 0,
+    lives: 3,
     gameStatus: 'menu', // menu, playing, won
     highscores: { easy: [], medium: [], hard: [] },
     notes: {} // Map of "row,col" -> [numbers]
@@ -163,6 +164,11 @@ export default function App() {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const formatScore = (score = 0) => {
+    if (score < 10000) return score.toString()
+    return `${(score / 1000).toFixed(score < 100000 ? 1 : 0)}k`
   }
   
   // Calculate time-based decay factor (0-1 range)
@@ -303,6 +309,7 @@ export default function App() {
       difficulty: difficulty,
       startTime: Date.now(),
       elapsedTime: 0,
+      lives: 3,
       gameStatus: 'playing',
       highscores: prev.highscores,
       notes: {}
@@ -349,6 +356,8 @@ export default function App() {
         setGameState(prev => {
           const elapsedTime = prev.elapsedTime
           const difficulty = prev.difficulty
+          const isWrong = selectedNumber !== prev.solution[row][col]
+          const nextLives = isWrong ? Math.max(prev.lives - 1, 0) : prev.lives
           
           let totalCellScore = 0
           for (let r = 0; r < 9; r++) {
@@ -377,6 +386,8 @@ export default function App() {
           return {
             ...prev,
             currentBoard: newBoard,
+            lives: nextLives,
+            gameStatus: nextLives === 0 ? 'lost' : prev.gameStatus,
             score: totalScore
           }
         })
@@ -384,7 +395,7 @@ export default function App() {
         checkWin()
       }
     }
-  }, [gameState.gameStatus, gameState.initialBoard, selectedNumber, pencilMode, gameState.notes, checkWin])
+  }, [gameState.gameStatus, gameState.initialBoard, selectedNumber, pencilMode, gameState.notes, checkWin, getCellScore, getBlockScore, getRowScore, getColScore])
   
   const handleDelete = useCallback(() => {
     if (gameState.gameStatus !== 'playing' || !gameState.selectedCell) return
@@ -506,7 +517,7 @@ export default function App() {
     <div className="app">
       {gameState.gameStatus === 'menu' && (
         <div className="menu-screen">
-          <h1 className="title">Sudoku</h1>
+          <h1 className="title">Sudoku <span>v{VERSION}</span></h1>
           <p className="subtitle">Classic Number Puzzle</p>
           
           <div className="difficulty-selector">
@@ -566,9 +577,6 @@ export default function App() {
             </div>
           )}
 
-          <footer className="app-footer">
-            <span>Sudoku PWA v{VERSION}</span>
-          </footer>
         </div>
       )}
       
@@ -582,10 +590,10 @@ export default function App() {
             >
               ←
             </button>
-            <h2>Sudoku</h2>
+            <h2>Sudoku <span>v{VERSION}</span></h2>
             <div className="topbar-stats" aria-label="Game status">
-              <span className="topbar-chip" title="Coins">🪙 {gameState.score || 0}</span>
-              <span className="topbar-chip" title="Lives">♥ 3</span>
+              <span className="topbar-chip score-chip" title="Score">🏆 {formatScore(gameState.score || 0)}</span>
+              <span className="topbar-chip" title="Lives">♥ {gameState.lives}</span>
               <span className="topbar-chip" title="Timer">⏳ {formatTime(gameState.elapsedTime)}</span>
             </div>
           </div>
@@ -603,7 +611,7 @@ export default function App() {
             </div>
             <div className="info-item">
               <span>Score:</span>
-              <span className="score-value">{gameState.score || 0}</span>
+              <span className="score-value">{formatScore(gameState.score || 0)}</span>
             </div>
           </div>
           
@@ -666,17 +674,31 @@ export default function App() {
             </button>
           </div>
 
-          <footer className="app-footer">
-            <span>Sudoku PWA v{VERSION}</span>
-          </footer>
+        </div>
+      )}
+
+      {gameState.gameStatus === 'lost' && (
+        <div className="win-screen">
+          <h2>Sudoku <span>v{VERSION}</span></h2>
+          <p>Keine Leben mehr</p>
+          <p className="score-display">Score: {formatScore(gameState.score || 0)}</p>
+          <button
+            className="btn"
+            onClick={() => setGameState(prev => ({
+              ...prev,
+              gameStatus: 'menu'
+            }))}
+          >
+            Back to Menu
+          </button>
         </div>
       )}
 
       {gameState.gameStatus === 'won' && (
         <div className="win-screen">
-          <h2>🎉 You Won!</h2>
+          <h2>🎉 Sudoku <span>v{VERSION}</span></h2>
           <p>Time: {formatTime(gameState.elapsedTime)}</p>
-          <p className="score-display">Score: {gameState.score}</p>
+          <p className="score-display">Score: {formatScore(gameState.score)}</p>
           <button 
             className="btn"
             onClick={() => setGameState(prev => ({
@@ -686,10 +708,6 @@ export default function App() {
           >
             Back to Menu
           </button>
-
-          <footer className="app-footer">
-            <span>Sudoku PWA v{VERSION}</span>
-          </footer>
         </div>
       )}
     </div>

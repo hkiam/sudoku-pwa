@@ -100,6 +100,17 @@ button {
   text-shadow: 0 5px 0 rgba(122, 74, 36, 0.16), 0 16px 34px var(--shadow-soft);
 }
 
+.title span,
+.game-header h2 span,
+.win-screen h2 span {
+  display: inline-block;
+  font-size: 0.42em;
+  vertical-align: middle;
+  color: #8b6338;
+  letter-spacing: 0.02em;
+  text-shadow: none;
+}
+
 .title::after {
   content: '✦';
   display: block;
@@ -155,7 +166,7 @@ button {
   color: var(--wood-dark);
   border-radius: 18px;
   background: linear-gradient(180deg, #f8dfaa 0%, #d3a66a 100%);
-  box-shadow: 0 8px 0 #8b5a2b, 0 15px 26px var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  box-shadow: 0 3px 0 #9b6835, 0 8px 14px rgba(90, 36, 24, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.55);
   transition: transform 160ms ease, box-shadow 160ms ease, filter 180ms ease, background 220ms ease;
   touch-action: manipulation;
 }
@@ -177,7 +188,7 @@ button {
 .delete-btn:active,
 .back-btn:active {
   transform: translateY(5px) scale(0.97);
-  box-shadow: 0 3px 0 #8b5a2b, 0 8px 16px rgba(90, 36, 24, 0.16), inset 0 2px 5px rgba(90, 36, 24, 0.18);
+  box-shadow: 0 1px 0 #9b6835, 0 4px 8px rgba(90, 36, 24, 0.12), inset 0 2px 5px rgba(90, 36, 24, 0.18);
 }
 
 .difficulty-btn {
@@ -253,6 +264,7 @@ button {
   color: var(--accent);
   text-align: center;
   text-shadow: 0 3px 0 rgba(122, 74, 36, 0.12);
+  white-space: nowrap;
 }
 
 .back-btn {
@@ -276,7 +288,9 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 8px;
+  max-width: 96px;
+  min-width: 0;
+  padding: 6px 7px;
   border: 1px solid rgba(122, 74, 36, 0.22);
   border-radius: 999px;
   background: rgba(255, 243, 216, 0.78);
@@ -285,6 +299,12 @@ button {
   font-size: 0.78rem;
   font-weight: 900;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-chip {
+  min-width: 72px;
 }
 
 .game-info {
@@ -293,13 +313,19 @@ button {
   gap: 12px;
   padding: 12px 16px;
   margin-bottom: 16px;
+  min-width: 0;
 }
 
 .info-item {
   display: flex;
   align-items: center;
   gap: 7px;
+  min-width: 0;
   font-weight: 900;
+}
+
+.score-value {
+  white-space: nowrap;
 }
 
 .info-item span:first-child {
@@ -320,7 +346,7 @@ button {
   background:
     linear-gradient(135deg, rgba(255, 243, 216, 0.64), rgba(154, 94, 42, 0.32)),
     #9b6330;
-  box-shadow: 0 22px 0 rgba(122, 74, 36, 0.22), 0 28px 50px var(--shadow-deep), inset 0 3px 7px rgba(255, 243, 216, 0.34);
+  box-shadow: inset 0 3px 7px rgba(255, 243, 216, 0.34);
 }
 
 .grid-row {
@@ -460,7 +486,7 @@ button {
 .numpad-btn.active {
   color: var(--accent);
   background: linear-gradient(180deg, #ffe58f 0%, #e3a941 100%);
-  box-shadow: 0 8px 0 #9d6a26, 0 0 22px rgba(242, 193, 78, 0.42), inset 0 0 0 2px rgba(255, 243, 216, 0.72);
+  box-shadow: 0 3px 0 #9d6a26, 0 0 12px rgba(242, 193, 78, 0.28), inset 0 0 0 2px rgba(255, 243, 216, 0.72);
   transform: translateY(-2px) scale(1.04);
 }
 
@@ -468,7 +494,7 @@ button {
   grid-column: span 2;
   color: #fff2dd;
   background: linear-gradient(180deg, #c96b55, #8f3a2c);
-  box-shadow: 0 8px 0 #612319, 0 15px 26px rgba(90, 36, 24, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 3px 0 #612319, 0 8px 14px rgba(90, 36, 24, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .win-screen {
@@ -536,21 +562,6 @@ button {
   font-size: 1.55rem;
 }
 
-.app-footer {
-  position: fixed;
-  right: 14px;
-  bottom: 10px;
-  z-index: 10;
-  padding: 6px 10px;
-  border: 1px solid rgba(122, 74, 36, 0.2);
-  border-radius: 999px;
-  background: rgba(255, 243, 216, 0.62);
-  color: rgba(90, 36, 24, 0.72);
-  font-size: 0.74rem;
-  font-weight: 800;
-  pointer-events: none;
-}
-
 @keyframes goldenGlow {
   0%, 100% {
     box-shadow: inset 0 0 0 2px rgba(90, 36, 24, 0.32), 0 0 12px rgba(242, 193, 78, 0.42);
@@ -609,10 +620,17 @@ button {
   .topbar-chip {
     flex: 1;
     justify-content: center;
+    max-width: none;
   }
 
   .game-info {
+    gap: 7px;
     padding: 10px 13px;
+  }
+
+  .info-item {
+    gap: 4px;
+    font-size: 0.82rem;
   }
 
   .sudoku-grid {
@@ -638,6 +656,14 @@ button {
   .topbar-chip {
     padding-inline: 6px;
     font-size: 0.72rem;
+  }
+
+  .game-header h2 {
+    font-size: 1.52rem;
+  }
+
+  .info-item {
+    font-size: 0.76rem;
   }
 
   .numpad {
