@@ -130,6 +130,7 @@ export default function App() {
   
   const [showWinAnimation, setShowWinAnimation] = useState(false)
   const [pencilMode, setPencilMode] = useState(false)
+  const [selectedNumber, setSelectedNumber] = useState(null) // Currently selected number for input
   
   // Load highscores from localStorage
   useEffect(() => {
@@ -162,35 +163,6 @@ export default function App() {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-  
-  const startGame = useCallback((difficulty) => {
-    const { initial, solution, puzzle } = generateSudoku(difficulty)
-    
-    setGameState(prev => ({
-      initialBoard: initial,
-      currentBoard: puzzle,
-      solution: solution,
-      selectedCell: null,
-      errors: [],
-      difficulty: difficulty,
-      startTime: Date.now(),
-      elapsedTime: 0,
-      gameStatus: 'playing',
-      highscores: prev.highscores,
-      notes: {}
-    }))
-    
-    setPencilMode(false)
-    setShowWinAnimation(false)
-  }, [])
-  
-  const handleCellClick = (row, col) => {
-    if (gameState.gameStatus !== 'playing') return
-    setGameState(prev => ({
-      ...prev,
-      selectedCell: { row, col }
-    }))
   }
   
   const checkWin = useCallback(() => {
@@ -227,50 +199,73 @@ export default function App() {
     }
   }, [gameState.difficulty, gameState.elapsedTime, gameState.gameStatus, gameState.highscores])
   
-  const handleNumberInput = useCallback((num) => {
-    // Validate number input (1-9 only)
-    if (typeof num !== 'number' || num < 1 || num > 9) {
-      console.warn('Invalid number input:', num)
-      return
-    }
+  const startGame = useCallback((difficulty) => {
+    const { initial, solution, puzzle } = generateSudoku(difficulty)
     
-    if (gameState.gameStatus !== 'playing' || !gameState.selectedCell) return
+    setGameState(prev => ({
+      initialBoard: initial,
+      currentBoard: puzzle,
+      solution: solution,
+      selectedCell: null,
+      errors: [],
+      difficulty: difficulty,
+      startTime: Date.now(),
+      elapsedTime: 0,
+      gameStatus: 'playing',
+      highscores: prev.highscores,
+      notes: {}
+    }))
     
-    const { row, col } = gameState.selectedCell
+    setPencilMode(false)
+    setSelectedNumber(null)
+    setShowWinAnimation(false)
+  }, [])
+  
+  const handleCellClick = useCallback((row, col) => {
+    if (gameState.gameStatus !== 'playing') return
+    
     const { initialBoard, currentBoard } = gameState
     
     // Can't modify pre-filled cells
     if (initialBoard[row][col] !== 0) return
     
-    if (pencilMode) {
-      // Add/remove note
-      const key = `${row},${col}`
-      const currentNotes = gameState.notes[key] || []
-      let newNotes
-      if (currentNotes.includes(num)) {
-        newNotes = currentNotes.filter(n => n !== num)
+    setGameState(prev => ({
+      ...prev,
+      selectedCell: { row, col }
+    }))
+    
+    // If a number is selected, input it into the clicked cell
+    if (selectedNumber !== null) {
+      if (pencilMode) {
+        // Add/remove note
+        const key = `${row},${col}`
+        const currentNotes = gameState.notes[key] || []
+        let newNotes
+        if (currentNotes.includes(selectedNumber)) {
+          newNotes = currentNotes.filter(n => n !== selectedNumber)
+        } else {
+          newNotes = [...currentNotes, selectedNumber].sort((a, b) => a - b)
+        }
+        
+        setGameState(prev => ({
+          ...prev,
+          notes: { ...prev.notes, [key]: newNotes }
+        }))
       } else {
-        newNotes = [...currentNotes, num].sort((a, b) => a - b)
+        // Normal mode: set number
+        const newBoard = currentBoard.map(r => [...r])
+        newBoard[row][col] = selectedNumber
+        
+        setGameState(prev => ({
+          ...prev,
+          currentBoard: newBoard
+        }))
+        
+        // Check win only after valid input
+        checkWin()
       }
-      
-      setGameState(prev => ({
-        ...prev,
-        notes: { ...prev.notes, [key]: newNotes }
-      }))
-    } else {
-      // Normal mode: set number
-      const newBoard = currentBoard.map(r => [...r])
-      newBoard[row][col] = num
-      
-      setGameState(prev => ({
-        ...prev,
-        currentBoard: newBoard
-      }))
-      
-      // Check win only after valid input
-      checkWin()
     }
-  }, [gameState.gameStatus, gameState.selectedCell, gameState.initialBoard, checkWin, pencilMode, gameState.notes])
+  }, [gameState.gameStatus, gameState.initialBoard, selectedNumber, pencilMode, gameState.notes, checkWin])
   
   const handleDelete = useCallback(() => {
     if (gameState.gameStatus !== 'playing' || !gameState.selectedCell) return
@@ -296,6 +291,11 @@ export default function App() {
     // Check win after delete
     checkWin()
   }, [gameState.gameStatus, gameState.selectedCell, gameState.initialBoard, checkWin, gameState.notes])
+  
+  const handleNumberSelect = useCallback((num) => {
+    // Select a number for input - toggles if already selected
+    setSelectedNumber(prev => prev === num ? null : num)
+  }, [])
   
   const getCellClass = (row, col) => {
     const { initialBoard, currentBoard, selectedCell, notes } = gameState
@@ -507,8 +507,8 @@ export default function App() {
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
               <button
                 key={num}
-                className="btn numpad-btn"
-                onClick={() => handleNumberInput(num)}
+                className={`btn numpad-btn ${selectedNumber === num ? 'active' : ''}`}
+                onClick={() => handleNumberSelect(num)}
               >
                 {num}
               </button>

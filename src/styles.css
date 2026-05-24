@@ -298,6 +298,12 @@ body {
   background: #3db08c;
 }
 
+.numpad-btn.active {
+  background: var(--accent-color);
+  transform: scale(1.1);
+  box-shadow: inset 0 0 0 2px white;
+}
+
 /* Numpad */
 .numpad {
   display: grid;
