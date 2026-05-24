@@ -318,15 +318,13 @@ export default function App() {
     
     const { initialBoard, currentBoard } = gameState
     
-    // Can't modify pre-filled cells
-    if (initialBoard[row][col] !== 0) return
-    
     setGameState(prev => ({
       ...prev,
       selectedCell: { row, col }
     }))
     
-    // If a number is selected, input it into the clicked cell
+    if (initialBoard[row][col] !== 0) return
+    
     if (selectedNumber !== null) {
       if (pencilMode) {
         // Add/remove note
