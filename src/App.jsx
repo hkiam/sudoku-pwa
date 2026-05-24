@@ -348,12 +348,41 @@ export default function App() {
         const newBoard = currentBoard.map(r => [...r])
         newBoard[row][col] = selectedNumber
         
-        setGameState(prev => ({
-          ...prev,
-          currentBoard: newBoard
-        }))
+        setGameState(prev => {
+          const elapsedTime = prev.elapsedTime
+          const difficulty = prev.difficulty
+          
+          let totalCellScore = 0
+          for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+              totalCellScore += getCellScore(newBoard[r][c], elapsedTime, difficulty)
+            }
+          }
+          
+          let totalBlockScore = 0
+          for (let b = 0; b < 9; b++) {
+            totalBlockScore += getBlockScore(b, elapsedTime, difficulty, newBoard)
+          }
+          
+          let totalRowScore = 0
+          for (let r = 0; r < 9; r++) {
+            totalRowScore += getRowScore(r, elapsedTime, difficulty, newBoard)
+          }
+          
+          let totalColScore = 0
+          for (let c = 0; c < 9; c++) {
+            totalColScore += getColScore(c, elapsedTime, difficulty, newBoard)
+          }
+          
+          const totalScore = totalCellScore + totalBlockScore + totalRowScore + totalColScore
+          
+          return {
+            ...prev,
+            currentBoard: newBoard,
+            score: totalScore
+          }
+        })
         
-        // Check win only after valid input
         checkWin()
       }
     }
@@ -558,6 +587,10 @@ export default function App() {
             <div className="info-item">
               <span>Time:</span>
               <span>{formatTime(gameState.elapsedTime)}</span>
+            </div>
+            <div className="info-item">
+              <span>Score:</span>
+              <span className="score-value">{gameState.score || 0}</span>
             </div>
           </div>
           
